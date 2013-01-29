@@ -13,50 +13,51 @@
 	$owner = $group->getOwnerEntity();
 	$forward_url = $group->getURL();
 	
-	if ($friends = elgg_get_logged_in_user_entity()->getFriends("", false)) {
-		$toggle_content = "<span>" . elgg_echo("group_tools:group:invite:friends:select_all") . "</span>";
-		$toggle_content .= "<span class='hidden'>" . elgg_echo("group_tools:group:invite:friends:deselect_all") . "</span>";
-		
-		$friendspicker = elgg_view("output/url", array("text" => $toggle_content, "href" => "javascript:void(0);", "onclick" => "group_tools_toggle_all_friends();", "id" => "friends_toggle", "class" => "float-alt elgg-button elgg-button-action"));
-		$friendspicker .= elgg_view('input/friendspicker', array('entities' => $friends, 'name' => 'user_guid', 'highlight' => 'all'));	
-	} else {
-		$friendspicker = elgg_echo('groups:nofriendsatall');
-	}
+//	if ($friends = elgg_get_logged_in_user_entity()->getFriends("", false)) {
+//		$toggle_content = "<span>" . elgg_echo("group_tools:group:invite:friends:select_all") . "</span>";
+//		$toggle_content .= "<span class='hidden'>" . elgg_echo("group_tools:group:invite:friends:deselect_all") . "</span>";
+//		
+//		$friendspicker = elgg_view("output/url", array("text" => $toggle_content, "href" => "javascript:void(0);", "onclick" => "group_tools_toggle_all_friends();", "id" => "friends_toggle", "class" => "float-alt elgg-button elgg-button-action"));
+//		$friendspicker .= elgg_view('input/friendspicker', array('entities' => $friends, 'name' => 'user_guid', 'highlight' => 'all'));	
+//	} else {
+//		$friendspicker = elgg_echo('groups:nofriendsatall');
+//	}
 
 	// which options to show
 	if(in_array("yes", array($invite_site_members, $invite_email, $invite_csv))){
-		$tabs = array(
-			"friends" => array(
-				"text" => elgg_echo("friends"),
-				"href" => "#",
-				"rel" => "friends",
-				"priority" => 200,
-				"onclick" => "group_tools_group_invite_switch_tab(\"friends\");",
-				"selected" => true
-			)
-		);
-		
-		// invite friends
-		$form_data = "<div id='group_tools_group_invite_friends'>";
-		$form_data .= $friendspicker;
-		$form_data .= "</div>";
+
+//		$tabs = array(
+//			"friends" => array(
+//				"text" => elgg_echo("friends"),
+//				"href" => "#",
+//				"rel" => "friends",
+//				"priority" => 200,
+//				"onclick" => "group_tools_group_invite_switch_tab(\"friends\");",
+//				"selected" => true
+//			)
+//		);
+//		
+//		// invite friends
+//		$form_data = "<div id='group_tools_group_invite_friends'>";
+//		$form_data .= $friendspicker;
+//		$form_data .= "</div>";
 
 		//invite all site members
 		if($invite_site_members == "yes"){
-			$tabs["users"] = array(
-				"text" => elgg_echo("group_tools:group:invite:users"),
-				"href" => "#",
-				"rel" => "users",
-				"priority" => 300,
-				"onclick" => "group_tools_group_invite_switch_tab(\"users\");"
+
+			$tabs = array(
+				"users" => array(
+					"text" => elgg_echo("group_tools:group:invite:users"),
+					"href" => "#",
+					"rel" => "users",
+					"priority" => 300,
+					"onclick" => "group_tools_group_invite_switch_tab(\"users\");",
+					"selected" => true
+				)
 			);
-			
 			$form_data .= "<div id='group_tools_group_invite_users'>";
 			$form_data .= "<div>" . elgg_echo("group_tools:group:invite:users:description") . "</div>";
-			$form_data .= elgg_view("input/group_invite_autocomplete", array("name" => "user_guid", 
-																				"id" => "group_tools_group_invite_autocomplete",
-																				"group_guid" => $group->getGUID(),
-																				"relationship" => "site"));
+			$form_data .= elgg_view("input/group_invite_autocomplete", array("name" => "user_guid", "id" => "group_tools_group_invite_autocomplete", "group_guid" => $group->getGUID(), "relationship" => "site"));
 			if(elgg_is_admin_logged_in()){
 				$form_data .= elgg_view("input/checkbox", array("name" => "all_users", "value" => "yes"));
 				$form_data .= elgg_echo("group_tools:group:invite:users:all");
@@ -146,32 +147,32 @@
 
 		switch(tab){
 			case "users":
-				$('#group_tools_group_invite_friends').hide();
+//				$('#group_tools_group_invite_friends').hide();
 				$('#group_tools_group_invite_email').hide();
 				$('#group_tools_group_invite_csv').hide();
 				
 				$('#group_tools_group_invite_users').show();
 				break;
 			case "email":
-				$('#group_tools_group_invite_friends').hide();
+//				$('#group_tools_group_invite_friends').hide();
 				$('#group_tools_group_invite_users').hide();
 				$('#group_tools_group_invite_csv').hide();
 				
 				$('#group_tools_group_invite_email').show();
 				break;
 			case "csv":
-				$('#group_tools_group_invite_friends').hide();
+//				$('#group_tools_group_invite_friends').hide();
 				$('#group_tools_group_invite_users').hide();
 				$('#group_tools_group_invite_email').hide();
 				
 				$('#group_tools_group_invite_csv').show();
 				break;
 			default:
-				$('#group_tools_group_invite_users').hide();
+//				$('#group_tools_group_invite_friends').hide();
 				$('#group_tools_group_invite_email').hide();
 				$('#group_tools_group_invite_csv').hide();
 				
-				$('#group_tools_group_invite_friends').show();
+				$('#group_tools_group_invite_users').show();
 				break;
 		}
 	}
