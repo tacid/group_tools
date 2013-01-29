@@ -15,9 +15,15 @@
 				$options["annotation_owner_guids"] = array($group_guid);
 			}
 			
+			// find hidden groups
+			$ia = elgg_set_ignore_access(true);
+			
 			if($groups = elgg_get_entities_from_annotations($options)){
 				$result = $groups[0];
 			}
+			
+			// restore access
+			elgg_set_ignore_access($ia);
 		}
 		
 		return $result;
@@ -50,6 +56,9 @@
 		$result = false;
 		
 		if(!empty($user) && ($user instanceof ElggUser) && !empty($group) && ($group instanceof ElggGroup) && ($loggedin_user = elgg_get_logged_in_user_entity())){
+			// make sure all goes well
+			$ia = elgg_set_ignore_access(true);
+			
 			if($group->join($user)){
 				// Remove any invite or join request flags
 				remove_entity_relationship($group->getGUID(), "invited", $user->getGUID());
@@ -63,6 +72,9 @@
 					$result = true;
 				}
 			}
+			
+			// restore access
+			elgg_set_ignore_access($ia);
 		}
 		
 		return $result;
@@ -72,13 +84,10 @@
 		$result = false;
 
 		if(!empty($group) && ($group instanceof ElggGroup) && !empty($email) && is_email_address($email) && ($loggedin_user = elgg_get_logged_in_user_entity())){
-			// get site secret
-			$site_secret = get_site_secret();
-			
 			// generate invite code
-			$invite_code = md5($site_secret . $email . $group->getGUID());
+			$invite_code = group_tools_generate_email_invite_code($group->getGUID(), $email);
 			
-			if(!group_tools_check_group_email_invitation($invite_code, $group->getGUID()) || $resend){
+			if(!($found_group = group_tools_check_group_email_invitation($invite_code, $group->getGUID())) || $resend){
 				// make site email
 				$site = elgg_get_site_entity();
 				if(!empty($site->email)){
@@ -96,7 +105,7 @@
 					}
 				}
 				
-				if(!$resend){
+				if(empty($found_group)){
 					// register invite with group
 					$group->annotate("email_invitation", $invite_code, ACCESS_LOGGED_IN, $group->getGUID());
 				}
@@ -181,3 +190,174 @@
 		
 		return $result;
 	}
+	
+	function group_tools_get_invited_groups_by_email($email, $site_guid = 0){
+		$result = false;
+		
+		if(!empty($email)){
+			$dbprefix = elgg_get_config("dbprefix");
+			$site_secret = get_site_secret();
+			$email = sanitise_string($email);
+			
+			$email_invitation_id = add_metastring("email_invitation");
+			
+			if($site_guid === 0){
+				$site_guid = elgg_get_site_entity()->getGUID();
+			}
+			
+			$options = array(
+				"type" => "group",
+				"limit" => false,
+				"site_guids" => $site_guid,
+				"joins" => array(
+					"JOIN " . $dbprefix . "annotations a ON a.owner_guid = e.guid",
+					"JOIN " . $dbprefix . "metastrings msv ON a.value_id = msv.id"
+				),
+				"wheres" => array(
+					"(a.name_id = " . $email_invitation_id . " AND msv.string = md5(CONCAT('" . $site_secret . $email . "', e.guid)))"
+				)
+			);
+			
+			// make sure we can see all groups
+			$ia = elgg_set_ignore_access(true);
+			
+			if($groups = elgg_get_entities($options)){
+				$result = $groups;
+			}
+			
+			// restore access
+			elgg_set_ignore_access($ia);
+		}
+		
+		return $result;
+	}
+	
+	function group_tools_generate_email_invite_code($group_guid, $email){
+		$result = false;
+		
+		if(!empty($group_guid) && !empty($email)){
+			// get site secret
+			$site_secret = get_site_secret();
+			
+			// generate code
+			$result = md5($site_secret . $email . $group_guid);
+		}
+		
+		return $result;
+	}
+	
+	function group_tools_get_missing_acl_users($group_guid = 0){
+		$dbprefix = elgg_get_config("dbprefix");
+		$group_guid = sanitise_int($group_guid, false);
+		
+		$query = "SELECT ac.id AS acl_id, ac.owner_guid AS group_guid, er.guid_one AS user_guid";
+		$query .= " FROM " . $dbprefix . "access_collections ac";
+		$query .= " JOIN " . $dbprefix . "entities e ON e.guid = ac.owner_guid";
+		$query .= " JOIN " . $dbprefix . "entity_relationships er ON ac.owner_guid = er.guid_two";
+		$query .= " JOIN " . $dbprefix . "entities e2 ON er.guid_one = e2.guid";
+		$query .= " WHERE";
+		
+		if($group_guid > 0){
+			// limit to the provided group
+			$query .= " e.guid = " . $group_guid;
+		} else {
+			// all groups
+			$query .= " e.type = 'group'";
+		}
+		
+		$query .= " AND e2.type = 'user'";
+		$query .= " AND er.relationship = 'member'";
+		$query .= " AND er.guid_one NOT IN";
+		$query .= " (";
+		$query .= " SELECT acm.user_guid";
+		$query .= " FROM " . $dbprefix . "access_collections ac2";
+		$query .= " JOIN " . $dbprefix . "access_collection_membership acm ON ac2.id = acm.access_collection_id";
+		$query .= " WHERE ac2.owner_guid = ac.owner_guid";
+		$query .= " )";
+		
+		return get_data($query);
+	}
+	
+	function group_tools_get_excess_acl_users($group_guid = 0){
+		$dbprefix = elgg_get_config("dbprefix");
+		$group_guid = sanitise_int($group_guid, false);
+		
+		$query = "SELECT ac.id AS acl_id, ac.owner_guid AS group_guid, acm.user_guid AS user_guid";
+		$query .= " FROM " . $dbprefix . "access_collections ac";
+		$query .= " JOIN " . $dbprefix . "access_collection_membership acm ON ac.id = acm.access_collection_id";
+		$query .= " JOIN " . $dbprefix . "entities e ON ac.owner_guid = e.guid";
+		$query .= " WHERE";
+		
+		if($group_guid > 0){
+			// limit to the provided group
+			$query .= " e.guid = " . $group_guid;
+		} else {
+			// all groups
+			$query .= " e.type = 'group'";
+		}
+		
+		$query .= " AND acm.user_guid NOT IN";
+		$query .= " (";
+		$query .= " SELECT r.guid_one";
+		$query .= " FROM " . $dbprefix . "entity_relationships r";
+		$query .= " WHERE r.relationship = 'member'";
+		$query .= " AND r.guid_two = ac.owner_guid";
+		$query .= " )";
+		
+		return get_data($query);
+	}
+	
+	function group_tools_get_groups_without_acl(){
+		$dbprefix = elgg_get_config("dbprefix");
+		
+		$options = array(
+			"type" => "group",
+			"limit" => false,
+			"wheres" => array("e.guid NOT IN (
+				SELECT ac.owner_guid
+				FROM " . $dbprefix . "access_collections ac
+				JOIN " . $dbprefix . "entities e ON ac.owner_guid = e.guid
+				WHERE e.type = 'group'
+				)")
+		);
+		
+		return elgg_get_entities($options);
+	}
+	
+	/**
+	 * Remove a user from an access collection,
+	 * can't use remove_user_from_access_collection() because user might not exists any more 
+	 * 
+	 * @param int $user_guid
+	 * @param int $collection_id
+	 * @return boolean
+	 */
+	function group_tools_remove_user_from_access_collection($user_guid, $collection_id){
+		$collection_id = sanitise_int($collection_id, false);
+		$user_guid = sanitise_int($user_guid, false);
+		
+		$collection = get_access_collection($collection_id);
+	
+		if (empty($user_guid) || !$collection) {
+			return false;
+		}
+	
+		$params = array(
+			"collection_id" => $collection_id,
+			"user_guid" => $user_guid
+		);
+	
+		if (!elgg_trigger_plugin_hook("access:collections:remove_user", "collection", $params, true)) {
+			return false;
+		}
+	
+		$dbprefix = elgg_get_config("dbprefix");
+		
+		$query = "DELETE";
+		$query .= " FROM " . $dbprefix . "access_collection_membership";
+		$query .= " WHERE access_collection_id = " . $collection_id;
+		$query .= " AND user_guid = " . $user_guid;
+	
+		return (bool) delete_data($query);
+	}
+	
