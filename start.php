@@ -89,9 +89,6 @@
 			run_function_once("group_tools_version_1_3");
 		}
 		
-		// group creation can be limited to admins
-		elgg_register_plugin_hook_handler("action", "groups/edit", "group_tools_action_handler");
-		
 		// register index widget to show latest discussions
 		elgg_register_widget_type("discussion", elgg_echo("discussion:latest"), elgg_echo("widgets:discussion:description"), "index,dashboard", true);
 		elgg_register_widget_type("group_forum_topics", elgg_echo("discussion:group"), elgg_echo("widgets:group_forum_topics:description"), "groups");
@@ -119,6 +116,8 @@
 		
 		elgg_register_action("groups/email_invitation", dirname(__FILE__) . "/actions/groups/email_invitation.php");
 		elgg_register_action("groups/decline_email_invitation", dirname(__FILE__) . "/actions/groups/decline_email_invitation.php");
+
+		elgg_register_action("group_tools/order_groups", dirname(__FILE__) . "/actions/order_groups.php", "admin");
 	}
 	
 	function group_tools_ready(){
@@ -138,7 +137,6 @@
 			}
 			
 			if(!empty($user)){
-				group_tools_get_invited_groups_by_email("jeabakker@coldtrick.com");
 				// check for admin transfer
 				$admin_transfer = elgg_get_plugin_setting("admin_transfer", "group_tools");
 				

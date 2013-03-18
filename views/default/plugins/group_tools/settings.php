@@ -20,23 +20,19 @@
 		"open" => elgg_echo("group_tools:groups:sorting:open"),
 		"closed" => elgg_echo("group_tools:groups:sorting:closed"),
 		"alpha" => elgg_echo("group_tools:groups:sorting:alphabetical"),
+		"ordered" => elgg_echo("group_tools:groups:sorting:ordered"),
 	);
+	
+	
 	
 	if($auto_joins = $plugin->auto_join){
 		$auto_joins = string_to_tag_array($auto_joins);
 	}
 	
-	
 	// group management settings
 	$title = elgg_echo("group_tools:settings:management:title");
 	
 	$body = "<div>";
-	$body .= elgg_echo("group_tools:settings:admin_create");
-	$body .= "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[admin_create]", "options_values" => $noyes_options, "value" => $plugin->admin_create));
-	$body .= "<div class='elgg-subtext'>" . elgg_echo("group_tools:settings:admin_create:description") . "</div>";
-	$body .= "</div>";
-	
-	$body .= "<div>";
 	$body .= elgg_echo("group_tools:settings:admin_transfer");
 	$body .= "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[admin_transfer]", "options_values" => $admin_transfer_options, "value" => $plugin->admin_transfer));
 	$body .= "</div>";
@@ -68,8 +64,33 @@
 	$body .= "<br />";
 	
 	$body .= "<div>";
-	$body .= elgg_echo("group_tools:settings:listing");
+	$body .= elgg_echo("group_tools:settings:listing:default");
 	$body .= "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[group_listing]", "options_values" => $listing_options, "value" => $plugin->group_listing));
+	$body .= "</div>";
+	
+	$body .= "<div>";
+	$body .= elgg_echo("group_tools:settings:listing:available");
+	$body .= "<ul class='mll'>";
+	foreach($listing_options as $tab => $tab_title){
+		$tab_setting_name = "group_listing_" . $tab . "_available";
+		$checkbox_options = array(
+				"name" => "params[" . $tab_setting_name . "]", 
+				"value" => 1
+				);
+		$tab_value = $plugin->$tab_setting_name;
+		if(($tab_value !== "0")){
+			if($tab == "ordered"){
+				// ordered tab is default disabled
+				if($tab_value !== null){
+					$checkbox_options["checked"] = "checked";
+				}
+			} else {
+				$checkbox_options["checked"] = "checked";
+			}
+		}
+		$body .= "<li>" . elgg_view("input/checkbox", $checkbox_options) . " " . $tab_title . "</li>";
+	}
+	$body .= "</ul>";
 	$body .= "</div>";
 	
 	echo elgg_view_module("inline", $title, $body);

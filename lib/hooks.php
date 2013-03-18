@@ -39,7 +39,7 @@
 						set_input("filter", $default_filter);
 					}
 					
-					if(in_array($filter, array("open", "closed", "alpha"))){
+					if(in_array($filter, array("open", "closed", "alpha", "ordered"))){
 						// we will handle the output
 						$result = false;
 						
@@ -323,22 +323,6 @@
 			
 			// add group option
 			$result[GROUP_TOOLS_GROUP_ACCESS_DEFAULT] = elgg_echo("group_tools:default:access:group");
-		}
-		
-		return $result;
-	}
-	
-	function group_tools_action_handler($hook, $type, $return_value, $params){
-		$result = $return_value;
-		
-		if($type == "groups/edit"){
-			// group creation can be limited, but editing isn't
-			if(group_tools_is_group_creation_limited()){
-				if(!get_input("group_guid") && !elgg_is_admin_logged_in()){
-					// trying to create a group, but you're not an admin
-					$result = false;
-				}
-			}
 		}
 		
 		return $result;
