@@ -159,7 +159,7 @@
 				$content .= "<td>" . elgg_view("output/url", array("href" => $group->getURL(), "text" => $group->name)) . "</td>";
 				$content .= "<td style='width: 25px'>";
 				$content .= elgg_view("output/confirmlink", array(
-					"href" => $vars["url"] . "action/group_tools/toggle_auto_join?group_guid=" . $group->getGUID(), 
+					"href" => elgg_get_site_url() . "action/group_tools/toggle_auto_join?group_guid=" . $group->getGUID(), 
 					"title" => elgg_echo("group_tools:remove"),
 					"text" => elgg_view_icon("delete")));
 				$content .= "</td>";

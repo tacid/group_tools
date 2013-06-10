@@ -40,7 +40,7 @@
 	$form_data .= "</div>";
 
 	$form = elgg_view("input/form", array("body" => $form_data,
-											"action" => $vars["url"] . "action/group_tools/mail",
+											"action" => elgg_get_site_url() . "action/group_tools/mail",
 											"id" => "group_tools_mail_form",
 											"class" => "elgg-form-alt"));
 	

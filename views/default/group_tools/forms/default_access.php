@@ -25,7 +25,7 @@
 		
 		$body = elgg_view("input/form", array(
 			"body" => $form_body,
-			"action" => $vars["url"] . "action/group_tools/default_access"));
+			"action" => elgg_get_site_url() . "action/group_tools/default_access"));
 		
 		global $GROUP_TOOLS_GROUP_DEFAULT_ACCESS_ENABLED;
 		if(!empty($GROUP_TOOLS_GROUP_DEFAULT_ACCESS_ENABLED)){

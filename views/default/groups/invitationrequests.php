@@ -154,7 +154,7 @@
 			$form_body .= "</div>";
 			
 			$form = elgg_view("input/form", array("body" => $form_body,
-													"action" => $vars["url"] . "action/groups/email_invitation"));
+													"action" => elgg_get_site_url() . "action/groups/email_invitation"));
 		
 			echo elgg_view_module("info", elgg_echo("group_tools:groups:invitation:code:title"), $form);
 			

@@ -25,7 +25,7 @@
 			$form_body .= "</div>";
 			
 			$form = elgg_view("input/form", array("body" => $form_body,
-													"action" => $vars["url"] . "action/group_tools/profile_widgets"));
+													"action" => elgg_get_site_url() . "action/group_tools/profile_widgets"));
 			
 			echo elgg_view_module("info", $title, $form);
 		}

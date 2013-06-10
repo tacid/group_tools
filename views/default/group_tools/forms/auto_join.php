@@ -30,7 +30,7 @@
 				
 				if($user_count != $member_count){
 					
-					$link_start = "<a href='" . elgg_add_action_tokens_to_url($vars["url"] . "action/group_tools/fix_auto_join?group_guid=" . $group->getGUID()) . "'>";
+					$link_start = "<a href='" . elgg_add_action_tokens_to_url(elgg_get_site_url() . "action/group_tools/fix_auto_join?group_guid=" . $group->getGUID()) . "'>";
 					$link_end = "</a>";
 					
 					$fix_members = "<br /><br />" . elgg_echo("group_tools:auto_join:fix", array($link_start, $link_end));
@@ -39,7 +39,7 @@
 				$lang_key = "group_tools:auto_join:add";
 			}
 			
-			$link_start = "<a href='" . elgg_add_action_tokens_to_url($vars["url"] . "action/group_tools/toggle_auto_join?group_guid=" . $group->getGUID()) . "'>";
+			$link_start = "<a href='" . elgg_add_action_tokens_to_url(elgg_get_site_url() . "action/group_tools/toggle_auto_join?group_guid=" . $group->getGUID()) . "'>";
 			$link_end = "</a>";
 			
 			$body = elgg_echo($lang_key, array($link_start, $link_end));
