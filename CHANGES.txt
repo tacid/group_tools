@@ -1,6 +1,18 @@
 = Version History =
 x.x:
 
+- fixed: no tab selected in group listing when group_tools is first activated
+- fixed: group admin transfer no longer working for non admins
+- changed: performance improvement in group admin transfer
+
+2.6 (2013-05-06):
+
+- added: option to hide the My Status sidebar
+- fixed: using new cache functions
+- changed: index groups widget now optionally respects group ordering
+
+2.5 (2013-04-05):
+
 - added: auto join groups based on email invitation when joining the site
 - added: different group ACL fixes
 - fixed: problem with email invites from hidden groups
@@ -134,5 +146,4 @@ x.x:
 - fixed: manage membership approval always visible
 
 1.0 (2011-06-10):
-
 - initial version

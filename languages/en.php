@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 	$english = array(
 	
@@ -61,7 +61,7 @@
 		// group invite message
 		'group_tools:groups:invite:body' => "Hi %s,
 
-%s invited you to join the '%s' group. 
+%s invited you to join the '%s' group.
 %s
 
 Click below to view your invitations:
@@ -95,7 +95,7 @@ You can also go to All site groups -> Group invitations and enter the following 
 		'group_tools:notify:transfer:subject' => "Administration of the group %s has been appointed to you",
 		'group_tools:notify:transfer:message' => "Hi %s,
 		
-%s has appointed you as the new administrator of the group %s. 
+%s has appointed you as the new administrator of the group %s.
 
 To visit the group please click on the following link:
 %s",
@@ -108,7 +108,7 @@ To visit the group please click on the following link:
 		'group_tools:admin_transfer:title' => "Transfer the ownership of this group",
 		'group_tools:admin_transfer:transfer' => "Transfer group ownership to",
 		'group_tools:admin_transfer:myself' => "Myself",
-		'group_tools:admin_transfer:submit' => "Tranfser",
+		'group_tools:admin_transfer:submit' => "Transfer",
 		'group_tools:admin_transfer:no_users' => "No members or friends to transfer ownership to.",
 		'group_tools:admin_transfer:confirm' => "Are you sure you wish to transfer ownership?",
 		
@@ -143,6 +143,8 @@ To visit the group please click on the following link:
 		'group_tools:cleanup:featured_sorting' => "How to sort featured groups",
 		'group_tools:cleanup:featured_sorting:time_created' => "Newest first",
 		'group_tools:cleanup:featured_sorting:alphabetical' => "Alphabetical",
+		'group_tools:cleanup:my_status' => "Hide the My Status sidebar",
+		'group_tools:cleanup:my_status:explain' => "In the sidebar on the group profile page there is an item which shows you your current membership status and some other status information. You can choose to hide this.",
 
 		// group default access
 		'group_tools:default_access:title' => "Group default access",
@@ -319,21 +321,22 @@ To visit the group please click on the following link:
 		'widgets:index_groups:description' => "Show the latest groups on your community",
 		'widgets:index_groups:show_members' => "Show members count",
 		'widgets:index_groups:featured' => "Show only featured groups",
+		'widgets:index_groups:apply_sorting' => "Apply sorting if available",
 		
-		'widgets:index_group:filter:field' => "Filter groups based on group field",
-		'widgets:index_group:filter:value' => "with value",
-		'widgets:index_group:filter:no_filter' => "No filter",
+		'widgets:index_groups:filter:field' => "Filter groups based on group field",
+		'widgets:index_groups:filter:value' => "with value",
+		'widgets:index_groups:filter:no_filter' => "No filter",
 		
 		// Featured Groups
 		'widgets:featured_groups:description' => "Shows a random list of featured groups",
 	  	'widgets:featured_groups:edit:show_random_group' => "Show a random non-featured group",
 	  	
 		// group_news widget
-		"widgets:group_news:title" => "Group News", 
-		"widgets:group_news:description" => "Shows latest 5 blogs from various groups", 
-		"widgets:group_news:no_projects" => "No groups configured", 
-		"widgets:group_news:no_news" => "No blogs for this group", 
-		"widgets:group_news:settings:project" => "Group", 
+		"widgets:group_news:title" => "Group News",
+		"widgets:group_news:description" => "Shows latest 5 blogs from various groups",
+		"widgets:group_news:no_projects" => "No groups configured",
+		"widgets:group_news:no_news" => "No blogs for this group",
+		"widgets:group_news:settings:project" => "Group",
 		"widgets:group_news:settings:no_project" => "Select a group",
 		"widgets:group_news:settings:blog_count" => "Max number of blogs",
 		"widgets:group_news:settings:group_icon_size" => "Group icon size",
