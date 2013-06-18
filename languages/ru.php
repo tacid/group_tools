@@ -62,13 +62,10 @@
 	
 		// group add message
 		'group_tools:groups:invite:add:subject' => "Вас добавили к группе  %s", //  "You've been added to the group %s",
-		'group_tools:groups:invite:add:body' => "Привет %s,
-	
-%s добавил вас в группу %s. 
+		'group_tools:groups:invite:add:body' => 'Здравствуйте, %s!<br>	
+%s добавил[а] вас в группу %s.<br> 
 %s
-
-Чтобы посмотреть группу, нажмите на ссылке:
-%s",
+Для просмотра группы нажмите на <a href="%s">эту ссылку</a>.',
 
 		// group invite by email
 		'group_tools:groups:invite:email:subject' => "Вас пригласили в группу %s", //  "You've been invited for the group %s",
