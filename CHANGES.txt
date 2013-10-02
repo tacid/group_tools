@@ -1,9 +1,20 @@
 = Version History =
+
 x.x:
 
+- added: option to allow group members to invite more members
+- added: Portuguese-Brazilian translation (thanks to brunovb)
+- fixed: crash when listing a forum topic of a hidden group
+- fixed: email invites are not cleaned up on register
+
+2.7 (2013-06-27):
+
+- added: status icon when discussion is closed and fast action to close/open a topic
+- added: a widget to quickly start a discussion (index, dashboard and group context)
 - fixed: no tab selected in group listing when group_tools is first activated
 - fixed: group admin transfer no longer working for non admins
 - changed: performance improvement in group admin transfer
+- changed: discussion list now shows in which group the discussion takes place (if not already clear)
 
 2.6 (2013-05-06):
 

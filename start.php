@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 	// define for default group access
 	define("GROUP_TOOLS_GROUP_ACCESS_DEFAULT", -10);
@@ -10,8 +10,9 @@
 	function group_tools_init(){
 		
 		// extend css & js
-		elgg_extend_view("css/elgg", "group_tools/css/site");
-		elgg_extend_view("js/elgg", "group_tools/js/site");
+		elgg_extend_view("css/elgg", "css/group_tools/site");
+		elgg_extend_view("js/elgg", "js/group_tools/site");
+		elgg_extend_view("js/admin", "js/group_tools/admin");
 		
 		elgg_register_simplecache_view("css/group_tools/autocomplete");
 		elgg_register_css("group_tools.autocomplete", elgg_get_simplecache_url("css", "group_tools/autocomplete"));
@@ -51,11 +52,14 @@
 		// register index groups widget
 		elgg_register_widget_type("index_groups", elgg_echo("groups"), elgg_echo("widgets:index_groups:description"), "index", true);
 		
+		// quick start discussion
+		elgg_register_widget_type("start_discussion", elgg_echo("group_tools:widgets:start_discussion:title"), elgg_echo("group_tools:widgets:start_discussion:description"), "index,dashboard,groups");
+		
 		// group invitation
 		elgg_register_action("groups/invite", dirname(__FILE__) . "/actions/groups/invite.php");
 		
 		// manage auto join for groups
-		elgg_extend_view("groups/edit", "group_tools/forms/auto_join", 350);
+		elgg_extend_view("groups/edit", "group_tools/forms/special_states", 350);
 		elgg_register_event_handler("create", "member_of_site", "group_tools_join_site_handler");
 		
 		// show group edit as tabbed
@@ -73,6 +77,9 @@
 		
 		// group notifications
 		elgg_extend_view("groups/edit", "group_tools/forms/notifications", 375);
+		
+		// allow group members to invite new members
+		elgg_extend_view("groups/edit", "group_tools/forms/invite_members", 475);
 		
 		// show group status in owner block
 		elgg_extend_view("page/elements/owner_block/extend", "group_tools/owner_block");
@@ -108,8 +115,9 @@
 		elgg_register_action("group_tools/profile_widgets", dirname(__FILE__) . "/actions/profile_widgets.php");
 		elgg_register_action("group_tools/cleanup", dirname(__FILE__) . "/actions/cleanup.php");
 		elgg_register_action("group_tools/default_access", dirname(__FILE__) . "/actions/default_access.php");
+		elgg_register_action("group_tools/invite_members", dirname(__FILE__) . "/actions/invite_members.php");
 		
-		elgg_register_action("group_tools/toggle_auto_join", dirname(__FILE__) . "/actions/admin/toggle_auto_join.php", "admin");
+		elgg_register_action("group_tools/toggle_special_state", dirname(__FILE__) . "/actions/admin/toggle_special_state.php", "admin");
 		elgg_register_action("group_tools/fix_auto_join", dirname(__FILE__) . "/actions/admin/fix_auto_join.php", "admin");
 		elgg_register_action("group_tools/notifications", dirname(__FILE__) . "/actions/admin/notifications.php", "admin");
 		elgg_register_action("group_tools/fix_acl", dirname(__FILE__) . "/actions/admin/fix_acl.php", "admin");
@@ -118,6 +126,8 @@
 		elgg_register_action("groups/decline_email_invitation", dirname(__FILE__) . "/actions/groups/decline_email_invitation.php");
 
 		elgg_register_action("group_tools/order_groups", dirname(__FILE__) . "/actions/order_groups.php", "admin");
+		
+		elgg_register_action("discussion/toggle_status", dirname(__FILE__) . "/actions/discussion/toggle_status.php");
 	}
 	
 	function group_tools_ready(){
@@ -161,9 +171,9 @@
 				if($page_owner->canEdit()){
 					$request_options = array(
 						"type" => "user",
-						"relationship" => "membership_request", 
-						"relationship_guid" => $page_owner->getGUID(), 
-						"inverse_relationship" => true, 
+						"relationship" => "membership_request",
+						"relationship_guid" => $page_owner->getGUID(),
+						"inverse_relationship" => true,
 						"count" => true
 					);
 					
@@ -204,7 +214,7 @@
 						'href' => "groups/mail/" . $page_owner->getGUID(),
 					));
 				}
-			}	
+			}
 		}
 		
 		if($page_owner instanceof ElggGroup){
@@ -230,7 +240,7 @@
 			JOIN {$dbprefix}entity_relationships er ON ac.owner_guid = er.guid_two
 			WHERE e.type = 'group'
 			AND er.relationship = 'member'
-			AND er.guid_one NOT IN 
+			AND er.guid_one NOT IN
 			(
 			SELECT acm.user_guid
 			FROM {$dbprefix}access_collections ac2

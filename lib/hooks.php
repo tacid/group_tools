@@ -42,13 +42,18 @@
 						set_input("filter", $filter);
 					}
 					
-					if(in_array($filter, array("open", "closed", "alpha", "ordered"))){
+					if(in_array($filter, array("open", "closed", "alpha", "ordered", "suggested"))){
 						// we will handle the output
 						$result = false;
 						
 						include(dirname(dirname(__FILE__)) . "/pages/groups/all.php");
 					}
 					
+					break;
+				case "suggested":
+					$result = false;
+					
+					include(dirname(dirname(__FILE__)) . "/pages/groups/suggested.php");
 					break;
 				case "requests":
 					$result = false;
@@ -114,9 +119,12 @@
 			if(elgg_in_context("groups")){
 				// modify some group menu items
 				if(!empty($page_owner) && !empty($user) && ($page_owner instanceof ElggGroup)){
+					$invite_found = false;
+					
 					foreach($result as $menu_item){
-						switch($menu_item->getText()){
-							case elgg_echo("groups:joinrequest"):
+						
+						switch($menu_item->getName()){
+							case "groups:joinrequest":
 								if(check_entity_relationship($user->getGUID(), "membership_request", $page_owner->getGUID())){
 									$menu_item->setText(elgg_echo("group_tools:joinrequest:already"));
 									$menu_item->setTooltip(elgg_echo("group_tools:joinrequest:already:tooltip"));
@@ -124,7 +132,9 @@
 								}
 								
 								break;
-							case elgg_echo("groups:invite"):
+							case "groups:invite":
+								$invite_found = true;
+								
 								$invite = elgg_get_plugin_setting("invite", "group_tools");
 								$invite_email = elgg_get_plugin_setting("invite_email", "group_tools");
 								$invite_csv = elgg_get_plugin_setting("invite_csv", "group_tools");
@@ -136,11 +146,49 @@
 								break;
 						}
 					}
+					
+					// maybe allow normal users to invite new members
+					if (elgg_in_context("group_profile") && !$invite_found) {
+						// this is only allowed for group members
+						if ($page_owner->isMember($user)) {
+							// we're on a group profile page, but haven't found the invite button yet
+							// so check if it should be here
+							if (($setting = elgg_get_plugin_setting("invite_members", "group_tools")) && in_array($setting, array("yes_off", "yes_on"))) {
+								$invite_members = $page_owner->invite_members;
+								if (empty($invite_members)) {
+									$invite_members = "no";
+									if ($setting == "yes_on") {
+										$invite_members = "yes";
+									}
+								}
+								
+								if ($invite_members == "yes") {
+									// normal users are allowed to invite users
+									$invite = elgg_get_plugin_setting("invite", "group_tools");
+									$invite_email = elgg_get_plugin_setting("invite_email", "group_tools");
+									$invite_csv = elgg_get_plugin_setting("invite_csv", "group_tools");
+									
+									if(in_array("yes", array($invite, $invite_csv, $invite_email))){
+										$text = elgg_echo("group_tools:groups:invite");
+									} else {
+										$text = elgg_echo("groups:invite");
+									}
+									
+									$result[] = ElggMenuItem::factory(array(
+										"name" => "groups:invite",
+										"href" => "groups/invite/" . $page_owner->getGUID(),
+										"text" => $text,
+										"link_class" => "elgg-button elgg-button-action",
+									));
+								}
+							}
+						}
+					}
 				}
 				
 				if(!empty($user) && !$user->isAdmin() && group_tools_is_group_creation_limited()){
 					foreach($result as $index => $menu_item){
-						if($menu_item->getText() == elgg_echo("groups:add")){
+						if($menu_item->getName() == "add"){
 							unset($result[$index]);
 						}
 					}
@@ -193,22 +241,43 @@
 		return $result;
 	}
 	
-	function group_tools_menu_entity_handler($hook, $type, $return_value, $params){
-		$entity = $params["entity"];
-		if(elgg_in_context("widgets_groups_show_members") && elgg_instanceof($entity, "group")){
-			// number of members
-			$num_members = get_group_members($entity->guid, 10, 0, 0, true);
-			$members_string = elgg_echo('groups:member');
-			$options = array(
-					'name' => 'members',
-					'text' => $num_members . ' ' . $members_string,
-					'href' => false,
-					'priority' => 200,
-			);
-			$return_value[] = ElggMenuItem::factory($options);
-			return $return_value;
+	function group_tools_menu_entity_handler($hook, $type, $return_value, $params) {
+		$result = $return_value;
+		
+		if (!empty($params) && is_array($params)) {
+			
+			$entity = elgg_extract("entity", $params);
+			
+			if (elgg_in_context("widgets_groups_show_members") && elgg_instanceof($entity, "group")) {
+				// number of members
+				$num_members = $entity->getMembers(10, 0, true);
+				
+				$result[] = ElggMenuItem::factory(array(
+					"name" => "members",
+					"text" => $num_members . " " . elgg_echo("groups:member"),
+					"href" => false,
+					"priority" => 200,
+				));
+			} elseif (elgg_instanceof($entity, "object", "groupforumtopic") && $entity->canEdit()) {
+				$text = elgg_echo("close");
+				$confirm = elgg_echo("group_tools:discussion:confirm:close");
+				if ($entity->status == "closed") {
+					$text = elgg_echo("open");
+					$confirm = elgg_echo("group_tools:discussion:confirm:open");
+				}
+				
+				$result[] = ElggMenuItem::factory(array(
+					"name" => "status_change",
+					"text" => $text,
+					"confirm" => $confirm,
+					"href" => "action/discussion/toggle_status?guid=" . $entity->getGUID(),
+					"is_trusted" => true,
+					"priority" => 200
+				));
+			}
 		}
 		
+		return $result;
 	}
 	
 	function group_tools_widget_url_handler($hook, $type, $return_value, $params){
@@ -255,6 +324,11 @@
 					case "a_user_groups":
 						if($owner = $widget->getOwnerEntity()){
 							$result = "/groups/member/" . $owner->username;
+						}
+						break;
+					case "start_discussion":
+						if (($owner = $widget->getOwnerEntity()) && elgg_instanceof($owner, "group")) {
+							$result = "/discussion/add/" . $owner->getGUID();
 						}
 						break;
 				}
