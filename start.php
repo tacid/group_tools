@@ -28,8 +28,9 @@ function group_tools_init() {
 	elgg_extend_view("js/elgg", "js/group_tools/site");
 	elgg_extend_view("js/admin", "js/group_tools/admin");
 	
-	// extend groups page handler
+	// extend page handlers
 	elgg_register_plugin_hook_handler("route", "groups", "group_tools_route_groups_handler");
+	elgg_register_plugin_hook_handler("route", "livesearch", "group_tools_route_livesearch_handler");
 	
 	// hook on title menu
 	elgg_register_plugin_hook_handler("register", "menu:title", "group_tools_menu_title_handler");
@@ -117,6 +118,9 @@ function group_tools_init() {
 	// registration
 	elgg_extend_view("register/extend", "group_tools/register_extend");
 	
+	// theme sandbox
+	elgg_extend_view("theme_sandbox/forms", "group_tools/theme_sandbox/grouppicker");
+	
 	// register index widget to show latest discussions
 	elgg_register_widget_type("discussion", elgg_echo("discussion:latest"), elgg_echo("widgets:discussion:description"), array("index", "dashboard"), true);
 	elgg_register_widget_type("group_forum_topics", elgg_echo("discussion:group"), elgg_echo("widgets:group_forum_topics:description"), array("groups"));
@@ -125,13 +129,14 @@ function group_tools_init() {
 	elgg_register_event_handler("join", "group", "group_tools_join_group_event");
 	
 	// register plugin hooks
-	elgg_register_plugin_hook_handler("widget_url", "widget_manager", "group_tools_widget_url_handler");
+	elgg_register_plugin_hook_handler("entity:url", "object", "group_tools_widget_url_handler");
 	elgg_register_plugin_hook_handler("default", "access", "group_tools_access_default_handler");
 	elgg_register_plugin_hook_handler("access:collections:write", "user", "group_tools_access_write_handler");
 	elgg_register_plugin_hook_handler("action", "groups/join", "group_tools_join_group_action_handler");
 	elgg_register_plugin_hook_handler("register", "menu:owner_block", "group_tools_register_owner_block_menu_handler");
 	elgg_register_plugin_hook_handler("route", "register", "group_tools_route_register_handler");
 	elgg_register_plugin_hook_handler("action", "register", "group_tools_action_register_handler");
+	elgg_register_plugin_hook_handler("group_tool_widgets", "widget_manager", "group_tools_tool_widgets_handler");
 	
 	// actions
 	elgg_register_action("group_tools/toggle_admin", dirname(__FILE__) . "/actions/toggle_admin.php");
